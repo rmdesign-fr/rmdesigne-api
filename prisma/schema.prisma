@@ -1,0 +1,133 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── Admin ───────────────────────────────────────────────
+model Admin {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ─── Booking ─────────────────────────────────────────────
+model Booking {
+  id          String         @id @default(cuid())
+  date        DateTime       @db.Date
+  time        String
+  name        String
+  email       String
+  phone       String?
+  service     BookingService
+  description String?
+  status      BookingStatus  @default(PENDING)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  @@unique([date, time])
+}
+
+enum BookingService {
+  PREPARATION_MOTEUR
+  SABLAGE_MICROBILLAGE
+  PEINTURE_AUTOMOBILE
+  RESTAURATION
+  AUTRE
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+}
+
+// ─── Product ─────────────────────────────────────────────
+model Product {
+  id          String          @id @default(cuid())
+  name        String
+  description String?
+  price       Decimal         @db.Decimal(10, 2)
+  category    ProductCategory
+  stock       Int             @default(0)
+  isActive    Boolean         @default(true)
+  images      String[]
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  orderItems OrderItem[]
+}
+
+enum ProductCategory {
+  VETEMENTS
+  ACCESSOIRES
+  STICKERS
+  LIFESTYLE
+}
+
+// ─── Review ──────────────────────────────────────────────
+model Review {
+  id        String   @id @default(cuid())
+  name      String
+  service   String
+  text      String
+  rating    Int
+  approved  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ─── Order ───────────────────────────────────────────────
+model Order {
+  id                 String      @id @default(cuid())
+  customerName       String
+  customerEmail      String
+  shippingLine1      String
+  shippingCity       String
+  shippingPostalCode String
+  shippingCountry    String      @default("FR")
+  items              OrderItem[]
+  total              Decimal     @db.Decimal(10, 2)
+  status             OrderStatus @default(PENDING)
+  stripePaymentId    String?
+  createdAt          DateTime    @default(now())
+  updatedAt          DateTime    @updatedAt
+}
+
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  name      String
+  price     Decimal @db.Decimal(10, 2)
+  qty       Int
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  SHIPPED
+  DELIVERED
+}
+
+// ─── Contact Message ─────────────────────────────────────
+model ContactMessage {
+  id        String   @id @default(cuid())
+  name      String
+  phone     String?
+  email     String
+  message   String
+  createdAt DateTime @default(now())
+}
