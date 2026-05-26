@@ -4,15 +4,29 @@ const logger = require('../utils/logger');
 
 let transporter = null;
 if (env.SMTP_USER && env.SMTP_PASS) {
+  // Gmail app passwords are displayed with spaces ("abcd efgh ijkl mnop") but
+  // must be sent without spaces. Strip whitespace defensively.
+  const smtpPass = env.SMTP_PASS.replace(/\s+/g, '');
+  const port = Number(env.SMTP_PORT);
+
   transporter = nodemailer.createTransport({
     host: env.SMTP_HOST,
-    port: env.SMTP_PORT,
-    secure: env.SMTP_PORT === 465,
+    port,
+    secure: port === 465,            // true for 465, false for 587/25
+    requireTLS: port === 587,        // upgrade to TLS on 587
     auth: {
       user: env.SMTP_USER,
-      pass: env.SMTP_PASS,
+      pass: smtpPass,
     },
   });
+
+  // Verify connection on startup so failures show up in Railway logs.
+  transporter.verify().then(
+    () => logger.info({ host: env.SMTP_HOST, port, user: env.SMTP_USER }, 'SMTP ready'),
+    (err) => logger.error({ err: err.message, code: err.code }, 'SMTP verification failed')
+  );
+} else {
+  logger.warn('SMTP credentials missing — emails will be skipped');
 }
 
 async function sendEmail({ to, subject, html }) {
