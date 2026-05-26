@@ -21,6 +21,17 @@ model Admin {
   updatedAt DateTime @updatedAt
 }
 
+// ─── Login Logs ──────────────────────────────────────────
+model LoginLog {
+  id        String   @id @default(cuid())
+  email     String
+  success   Boolean
+  ipAddress String?
+  userAgent String?
+  errorMsg  String?
+  timestamp DateTime @default(now())
+}
+
 // ─── Booking ─────────────────────────────────────────────
 model Booking {
   id          String         @id @default(cuid())

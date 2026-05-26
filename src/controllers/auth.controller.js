@@ -11,7 +11,12 @@ const COOKIE_OPTIONS = {
 
 exports.login = catchAsync(async (req, res) => {
   const { email, password } = req.body;
-  const { token, admin } = await authService.login(email, password);
+  
+  // Get IP address and user agent
+  const ipAddress = req.ip || req.connection.remoteAddress;
+  const userAgent = req.get('user-agent');
+  
+  const { token, admin } = await authService.login(email, password, ipAddress, userAgent);
 
   res.cookie('token', token, {
     ...COOKIE_OPTIONS,
@@ -29,4 +34,19 @@ exports.logout = (_req, res) => {
 exports.getMe = catchAsync(async (req, res) => {
   const admin = await authService.getMe(req.admin.id);
   res.json({ admin });
+});
+
+exports.getLoginLogs = catchAsync(async (req, res) => {
+  const limit = parseInt(req.query.limit) || 50;
+  const offset = parseInt(req.query.offset) || 0;
+  
+  const { logs, total } = await authService.getLoginLogs(limit, offset);
+  
+  res.json({ 
+    logs, 
+    total,
+    limit,
+    offset,
+    hasMore: offset + limit < total
+  });
 });

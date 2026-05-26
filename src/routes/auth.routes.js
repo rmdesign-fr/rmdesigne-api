@@ -15,5 +15,6 @@ const loginSchema = z.object({
 router.post('/login', authLimiter, validate(loginSchema), authController.login);
 router.post('/logout', authController.logout);
 router.get('/me', auth, authController.getMe);
+router.get('/logs', auth, authController.getLoginLogs);
 
 module.exports = router;
