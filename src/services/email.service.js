@@ -9,25 +9,51 @@ if (env.SMTP_USER && env.SMTP_PASS) {
   const smtpPass = env.SMTP_PASS.replace(/\s+/g, '');
   const port = Number(env.SMTP_PORT);
 
-  transporter = nodemailer.createTransport({
-    host: env.SMTP_HOST,
-    port,
-    secure: port === 465,            // true for 465, false for 587/25
-    requireTLS: port === 587,        // upgrade to TLS on 587
-    auth: {
-      user: env.SMTP_USER,
-      pass: smtpPass,
-    },
-  });
+  const dns = require('dns');
+
+dns.setDefaultResultOrder('ipv4first');
+
+transporter = nodemailer.createTransport({
+  host: env.SMTP_HOST,
+  port,
+  secure: port === 465,
+
+  requireTLS: port === 587,
+
+  family: 4,
+
+  connectionTimeout: 10000,
+  greetingTimeout: 10000,
+  socketTimeout: 10000,
+
+  auth: {
+    user: env.SMTP_USER,
+    pass: smtpPass,
+  },
+
+  tls: {
+    rejectUnauthorized: true,
+  },
+
+  logger: true,
+  debug: true,
+});
 
   // Verify connection on startup so failures show up in Railway logs.
   transporter.verify().then(
-    () => logger.info({ host: env.SMTP_HOST, port, user: env.SMTP_USER }, 'SMTP ready'),
-    (err) => logger.error({ err: err.message, code: err.code }, 'SMTP verification failed')
-  );
-} else {
-  logger.warn('SMTP credentials missing — emails will be skipped');
-}
+  () => logger.info(
+    { host: env.SMTP_HOST, port, user: env.SMTP_USER },
+    'SMTP ready'
+  ),
+  (err) => logger.error(
+    {
+      message: err.message,
+      code: err.code,
+      stack: err.stack
+    },
+    'SMTP verification failed'
+  )
+);
 
 async function sendEmail({ to, subject, html }) {
   if (!transporter) {
