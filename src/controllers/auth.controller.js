@@ -2,10 +2,12 @@ const catchAsync = require('../utils/catchAsync');
 const authService = require('../services/auth.service');
 const env = require('../config/env');
 
+const IS_PROD = process.env.NODE_ENV === 'production';
 const COOKIE_OPTIONS = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === 'production',
-  sameSite: 'lax',
+  secure: IS_PROD,
+  // Cross-site cookies (frontend and API on different subdomains) require SameSite=None + Secure
+  sameSite: IS_PROD ? 'none' : 'lax',
   path: '/',
 };
 
