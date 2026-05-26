@@ -13,30 +13,33 @@ if (env.SMTP_USER && env.SMTP_PASS) {
   const port = Number(env.SMTP_PORT);
 
   transporter = nodemailer.createTransport({
-    host: env.SMTP_HOST,
-    port,
+  host: '142.251.2.108',
 
-    secure: port === 465,
-    requireTLS: port === 587,
+  port: 587,
 
+  secure: false,
+
+  requireTLS: true,
+
+  name: 'localhost',
+
+  connectionTimeout: 15000,
+  greetingTimeout: 15000,
+  socketTimeout: 15000,
+
+  auth: {
+    user: env.SMTP_USER,
+    pass: smtpPass,
+  },
+
+  tls: {
+    servername: 'smtp.gmail.com',
     family: 4,
+  },
 
-    connectionTimeout: 10000,
-    greetingTimeout: 10000,
-    socketTimeout: 10000,
-
-    auth: {
-      user: env.SMTP_USER,
-      pass: smtpPass,
-    },
-
-    tls: {
-      rejectUnauthorized: true,
-    },
-
-    logger: true,
-    debug: true,
-  });
+  logger: true,
+  debug: true,
+});
 
   transporter.verify().then(
     () => {
