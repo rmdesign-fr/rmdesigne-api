@@ -19,6 +19,9 @@ const envSchema = z.object({
   BOOKING_SLOT_END: z.coerce.number().int().min(0).max(23).default(18),
   BOOKING_SLOT_INTERVAL: z.coerce.number().int().min(15).max(240).default(60),
   BOOKING_WORKING_DAYS: z.string().default('1,2,3,4,5'),
+  PAYPAL_CLIENT_ID: z.string().optional().default(''),
+  PAYPAL_CLIENT_SECRET: z.string().optional().default(''),
+  PAYPAL_MODE: z.enum(['sandbox', 'live']).default('sandbox'),
 });
 
 const parsed = envSchema.safeParse(process.env);

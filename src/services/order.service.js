@@ -31,6 +31,24 @@ async function getOrderById(id) {
   return serializeOrder(order);
 }
 
+async function calculateTotal(items) {
+  const productIds = items.map((i) => i.productId);
+  const products = await prisma.product.findMany({
+    where: { id: { in: productIds }, isActive: true },
+  });
+
+  if (products.length !== items.length) {
+    throw new AppError('Un ou plusieurs produits sont introuvables ou inactifs', 400);
+  }
+
+  const productMap = Object.fromEntries(products.map((p) => [p.id, p]));
+  let total = 0;
+  for (const item of items) {
+    total += Number(productMap[item.productId].price) * item.qty;
+  }
+  return total;
+}
+
 async function createOrder(data) {
   // Validate products and compute total
   const productIds = data.items.map((i) => i.productId);
@@ -78,6 +96,7 @@ async function createOrder(data) {
         shippingPostalCode: data.shippingAddress.postalCode,
         shippingCountry: data.shippingAddress.country || 'FR',
         total,
+        stripePaymentId: data.paymentId || null,
         items: { create: orderItems },
       },
       include: { items: true },
@@ -114,6 +133,7 @@ async function updateOrderStatus(id, newStatusKey) {
 module.exports = {
   getAllOrders,
   getOrderById,
+  calculateTotal,
   createOrder,
   updateOrderStatus,
 };

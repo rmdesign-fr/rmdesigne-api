@@ -14,6 +14,7 @@ const productRoutes = require('./routes/product.routes');
 const reviewRoutes = require('./routes/review.routes');
 const orderRoutes = require('./routes/order.routes');
 const contactRoutes = require('./routes/contact.routes');
+const paypalRoutes = require('./routes/paypal.routes');
 
 const app = express();
 
@@ -47,6 +48,7 @@ app.use('/api/products', productRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/contact', contactRoutes);
+app.use('/api/paypal', paypalRoutes);
 
 // ─── 404 handler ─────────────────────────────────────────
 app.use((req, res) => {
