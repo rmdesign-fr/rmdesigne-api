@@ -18,6 +18,10 @@ const paypalRoutes = require('./routes/paypal.routes');
 
 const app = express();
 
+// Railway / Heroku / etc. terminate TLS at a proxy and forward via X-Forwarded-For.
+// Trust the first proxy hop so req.ip and express-rate-limit work correctly.
+app.set('trust proxy', 1);
+
 // ─── Security & parsing ──────────────────────────────────
 app.use(helmet());
 app.use(
