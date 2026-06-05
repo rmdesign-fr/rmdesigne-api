@@ -12,8 +12,13 @@ exports.getAllReviews = catchAsync(async (req, res) => {
 });
 
 exports.createReview = catchAsync(async (req, res) => {
-  const review = await reviewService.createReview(req.body);
+  const review = await reviewService.createReview(req.body, req.files);
   res.status(201).json(review);
+});
+
+exports.updateReview = catchAsync(async (req, res) => {
+  const review = await reviewService.updateReview(req.params.id, req.body, req.files);
+  res.json(review);
 });
 
 exports.toggleApproval = catchAsync(async (req, res) => {

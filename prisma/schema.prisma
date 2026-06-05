@@ -93,9 +93,23 @@ model Review {
   service   String
   text      String
   rating    Int
+  images    String[] @default([])
   approved  Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+// ─── Service Gallery ─────────────────────────────────────
+model ServiceGallery {
+  id          String   @id @default(cuid())
+  serviceSlug String
+  title       String?
+  imageUrl    String
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([serviceSlug])
 }
 
 // ─── Order ───────────────────────────────────────────────

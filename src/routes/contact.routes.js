@@ -16,5 +16,6 @@ const contactSchema = z.object({
 
 router.post('/', contactLimiter, validate(contactSchema), contactController.createContactMessage);
 router.get('/', auth, contactController.getAllMessages);
+router.delete('/:id', auth, contactController.deleteMessage);
 
 module.exports = router;

@@ -3,6 +3,7 @@ const { z } = require('zod');
 const reviewController = require('../controllers/review.controller');
 const auth = require('../middleware/auth');
 const validate = require('../middleware/validate');
+const upload = require('../middleware/upload');
 
 const router = Router();
 
@@ -20,7 +21,8 @@ const toggleApprovalSchema = z.object({
 
 router.get('/', reviewController.getApprovedReviews);
 router.get('/all', auth, reviewController.getAllReviews);
-router.post('/', validate(createReviewSchema), reviewController.createReview);
+router.post('/', upload.array('images', 5), reviewController.createReview);
+router.put('/:id', auth, upload.array('images', 5), reviewController.updateReview);
 router.put('/:id/approve', auth, validate(toggleApprovalSchema), reviewController.toggleApproval);
 router.delete('/:id', auth, reviewController.deleteReview);
 
