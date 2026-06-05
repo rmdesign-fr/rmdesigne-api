@@ -1,8 +1,6 @@
-const { PrismaClient } = require('@prisma/client')
+const prisma = require('../config/db')
 const cloudinaryService = require('./cloudinary.service')
 const AppError = require('../utils/AppError')
-
-const prisma = new PrismaClient()
 
 exports.getGalleryBySlug = async (slug) => {
   const gallery = await prisma.serviceGallery.findMany({

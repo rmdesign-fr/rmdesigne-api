@@ -1,7 +1,7 @@
 const express = require('express')
 const router = express.Router()
 const serviceController = require('../controllers/service.controller')
-const { protect } = require('../middleware/auth')
+const auth = require('../middleware/auth')
 const upload = require('../middleware/upload')
 
 // Public routes
@@ -10,20 +10,20 @@ router.get('/:slug/gallery', serviceController.getServiceGallery)
 // Protected admin routes
 router.post(
   '/:slug/gallery',
-  protect,
+  auth,
   upload.single('image'),
   serviceController.addGalleryImage
 )
 
 router.put(
   '/gallery/:id',
-  protect,
+  auth,
   serviceController.updateGalleryImage
 )
 
 router.delete(
   '/gallery/:id',
-  protect,
+  auth,
   serviceController.deleteGalleryImage
 )
 
