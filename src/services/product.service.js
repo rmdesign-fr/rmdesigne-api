@@ -1,17 +1,18 @@
-const prisma = require('../config/db');
-const AppError = require('../utils/AppError');
-const cloudinaryService = require('./cloudinary.service');
-const { CATEGORY_MAP, CATEGORY_MAP_REVERSE } = require('../utils/constants');
+const prisma = require("../config/db");
+const AppError = require("../utils/AppError");
+const cloudinaryService = require("./cloudinary.service");
+const { CATEGORY_MAP, CATEGORY_MAP_REVERSE } = require("../utils/constants");
 
 function serializeProduct(product) {
   return {
     id: product.id,
     name: product.name,
-    description: product.description || '',
+    description: product.description || "",
     price: Number(product.price),
     category: CATEGORY_MAP_REVERSE[product.category],
     stock: product.stock,
     isActive: product.isActive,
+    surCommande: product.surCommande || false,
     images: product.images,
     createdAt: product.createdAt.toISOString(),
   };
@@ -25,7 +26,7 @@ async function getProducts(category) {
 
   const products = await prisma.product.findMany({
     where,
-    orderBy: { createdAt: 'desc' },
+    orderBy: { createdAt: "desc" },
   });
 
   return products.map(serializeProduct);
@@ -33,7 +34,7 @@ async function getProducts(category) {
 
 async function getProductsAdmin() {
   const products = await prisma.product.findMany({
-    orderBy: { createdAt: 'desc' },
+    orderBy: { createdAt: "desc" },
   });
   return products.map(serializeProduct);
 }
@@ -41,7 +42,7 @@ async function getProductsAdmin() {
 async function getProductById(id) {
   const product = await prisma.product.findUnique({ where: { id } });
   if (!product) {
-    throw new AppError('Produit introuvable', 404);
+    throw new AppError("Produit introuvable", 404);
   }
   return serializeProduct(product);
 }
@@ -59,6 +60,7 @@ async function createProduct(data, files) {
       category: CATEGORY_MAP[data.category],
       stock: data.stock,
       isActive: data.isActive,
+      surCommande: data.surCommande === "true" || data.surCommande === true,
       images: imageUrls,
     },
   });
@@ -69,11 +71,13 @@ async function createProduct(data, files) {
 async function updateProduct(id, data, newFiles, existingImageUrls) {
   const current = await prisma.product.findUnique({ where: { id } });
   if (!current) {
-    throw new AppError('Produit introuvable', 404);
+    throw new AppError("Produit introuvable", 404);
   }
 
   // Delete removed images from Cloudinary
-  const removed = current.images.filter((img) => !existingImageUrls.includes(img));
+  const removed = current.images.filter(
+    (img) => !existingImageUrls.includes(img),
+  );
   await Promise.all(removed.map((img) => cloudinaryService.deleteImage(img)));
 
   // Upload new images
@@ -85,11 +89,16 @@ async function updateProduct(id, data, newFiles, existingImageUrls) {
 
   const updateData = {};
   if (data.name !== undefined) updateData.name = data.name;
-  if (data.description !== undefined) updateData.description = data.description || null;
+  if (data.description !== undefined)
+    updateData.description = data.description || null;
   if (data.price !== undefined) updateData.price = data.price;
-  if (data.category !== undefined) updateData.category = CATEGORY_MAP[data.category];
+  if (data.category !== undefined)
+    updateData.category = CATEGORY_MAP[data.category];
   if (data.stock !== undefined) updateData.stock = data.stock;
   if (data.isActive !== undefined) updateData.isActive = data.isActive;
+  if (data.surCommande !== undefined)
+    updateData.surCommande =
+      data.surCommande === "true" || data.surCommande === true;
   updateData.images = allImages;
 
   const product = await prisma.product.update({
@@ -103,14 +112,16 @@ async function updateProduct(id, data, newFiles, existingImageUrls) {
 async function deleteProduct(id) {
   const product = await prisma.product.findUnique({ where: { id } });
   if (!product) {
-    throw new AppError('Produit introuvable', 404);
+    throw new AppError("Produit introuvable", 404);
   }
 
   // Delete all images from Cloudinary
-  await Promise.all(product.images.map((img) => cloudinaryService.deleteImage(img)));
+  await Promise.all(
+    product.images.map((img) => cloudinaryService.deleteImage(img)),
+  );
 
   await prisma.product.delete({ where: { id } });
-  return { message: 'Supprimé' };
+  return { message: "Supprimé" };
 }
 
 module.exports = {

@@ -1,0 +1,1 @@
+ALTER TABLE "Product" ADD COLUMN "surCommande" BOOLEAN NOT NULL DEFAULT false;
