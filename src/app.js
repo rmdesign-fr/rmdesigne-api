@@ -27,18 +27,24 @@ app.set("trust proxy", 1);
 app.use(helmet());
 // Support a single origin or a comma-separated list (e.g. for custom domain + Railway URL)
 const allowedOrigins = env.FRONTEND_URL.split(",")
-  .map((o) => o.trim())
+  .map((o) => o.trim().replace(/\/+$/, "")) // trim and strip trailing slashes
   .filter(Boolean);
+
+logger.info({ allowedOrigins }, "CORS allowed origins");
 
 app.use(
   cors({
     origin: (origin, callback) => {
-      // Allow server-to-server requests (no origin) and listed origins
-      if (!origin || allowedOrigins.includes(origin)) {
+      // Allow server-to-server / same-origin requests (no Origin header)
+      if (!origin) return callback(null, true);
+      const normalised = origin.trim().replace(/\/+$/, "");
+      if (allowedOrigins.includes(normalised)) {
         callback(null, true);
       } else {
-        logger.warn({ origin }, "CORS blocked request");
-        callback(new Error(`CORS: origin ${origin} not allowed`));
+        // Don't throw — just return false so the browser blocks it,
+        // but Express doesn't turn it into a 500.
+        logger.warn({ origin, allowedOrigins }, "CORS blocked request");
+        callback(null, false);
       }
     },
     credentials: true,
