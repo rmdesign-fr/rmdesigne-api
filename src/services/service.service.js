@@ -1,22 +1,22 @@
-const prisma = require('../config/db')
-const cloudinaryService = require('./cloudinary.service')
-const AppError = require('../utils/AppError')
+const prisma = require("../config/db");
+const cloudinaryService = require("./cloudinary.service");
+const AppError = require("../utils/AppError");
 
 exports.getGalleryBySlug = async (slug) => {
   const gallery = await prisma.serviceGallery.findMany({
     where: { serviceSlug: slug },
-    orderBy: [{ order: 'asc' }, { createdAt: 'desc' }],
-  })
+    orderBy: [{ order: "asc" }, { createdAt: "desc" }],
+  });
 
-  return gallery
-}
+  return gallery;
+};
 
 exports.addGalleryImage = async ({ serviceSlug, imageFile, title, order }) => {
   // Upload image to Cloudinary
   const imageUrl = await cloudinaryService.uploadImage(
     imageFile.buffer,
-    `services/${serviceSlug}`
-  )
+    `services/${serviceSlug}`,
+  );
 
   const galleryItem = await prisma.serviceGallery.create({
     data: {
@@ -25,10 +25,10 @@ exports.addGalleryImage = async ({ serviceSlug, imageFile, title, order }) => {
       title,
       order: order || 0,
     },
-  })
+  });
 
-  return galleryItem
-}
+  return galleryItem;
+};
 
 exports.updateGalleryImage = async (id, data) => {
   const updated = await prisma.serviceGallery.update({
@@ -37,28 +37,28 @@ exports.updateGalleryImage = async (id, data) => {
       ...(data.title !== undefined && { title: data.title }),
       ...(data.order !== undefined && { order: data.order }),
     },
-  })
+  });
 
-  return updated
-}
+  return updated;
+};
 
 exports.deleteGalleryImage = async (id) => {
   const item = await prisma.serviceGallery.findUnique({
     where: { id },
-  })
+  });
 
   if (!item) {
-    throw new AppError('Gallery item not found', 404)
+    throw new AppError("Gallery item not found", 404);
   }
 
   // Delete from Cloudinary
   try {
-    await cloudinaryService.deleteImage(item.imageUrl)
+    await cloudinaryService.deleteImage(item.imageUrl);
   } catch (err) {
-    console.error('Failed to delete image from Cloudinary:', err)
+    console.error("Failed to delete image from Cloudinary:", err);
   }
 
   await prisma.serviceGallery.delete({
     where: { id },
-  })
-}
+  });
+};
