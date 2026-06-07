@@ -8,7 +8,7 @@ const upload = multer({
   // Some browsers (Chrome on Windows) send HEIC/HEIF files as
   // application/octet-stream, so a strict filter would block them.
   limits: {
-    fileSize: 15 * 1024 * 1024, // 15 MB — covers high-res pro photos
+    fileSize: 30 * 1024 * 1024, // 30 MB — covers high-res pro photos
     files: 5,
   },
 });
