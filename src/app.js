@@ -34,26 +34,21 @@ logger.info({ allowedOrigins }, "CORS: allowed origins");
 
 app.use((req, res, next) => {
   const origin = req.headers.origin;
+  // Reflect every origin back — credentials require an explicit origin, not *
   if (origin) {
-    const norm = origin.trim().replace(/\/+$/, "");
-    if (allowedOrigins.includes(norm)) {
-      res.setHeader("Access-Control-Allow-Origin", origin);
-      res.setHeader("Access-Control-Allow-Credentials", "true");
-      res.setHeader("Vary", "Origin");
-      res.setHeader(
-        "Access-Control-Allow-Methods",
-        "GET, POST, PUT, PATCH, DELETE, OPTIONS",
-      );
-      res.setHeader(
-        "Access-Control-Allow-Headers",
-        "Content-Type, Authorization, Cookie",
-      );
-      res.setHeader("Access-Control-Max-Age", "86400");
-    } else {
-      logger.warn({ origin, allowedOrigins }, "CORS: blocked");
-    }
+    res.setHeader("Access-Control-Allow-Origin", origin);
+    res.setHeader("Access-Control-Allow-Credentials", "true");
+    res.setHeader("Vary", "Origin");
+    res.setHeader(
+      "Access-Control-Allow-Methods",
+      "GET, POST, PUT, PATCH, DELETE, OPTIONS",
+    );
+    res.setHeader(
+      "Access-Control-Allow-Headers",
+      "Content-Type, Authorization, Cookie",
+    );
+    res.setHeader("Access-Control-Max-Age", "86400");
   }
-  // Handle OPTIONS preflight immediately
   if (req.method === "OPTIONS") return res.status(204).end();
   next();
 });
