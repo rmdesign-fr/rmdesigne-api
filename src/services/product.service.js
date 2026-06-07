@@ -57,7 +57,7 @@ async function createProduct(data, files) {
     data: {
       name: data.name,
       description: data.description || null,
-      price: parseFloat(data.price),
+      price: parseFloat(data.price) || 0,
       category: CATEGORY_MAP[data.category],
       stock: parseInt(data.stock) || 0,
       isActive: data.isActive === "true" || data.isActive === true,
@@ -93,7 +93,7 @@ async function updateProduct(id, data, newFiles, existingImageUrls) {
   if (data.name !== undefined) updateData.name = data.name;
   if (data.description !== undefined)
     updateData.description = data.description || null;
-  if (data.price !== undefined) updateData.price = parseFloat(data.price);
+  if (data.price !== undefined) updateData.price = parseFloat(data.price) || 0;
   if (data.category !== undefined)
     updateData.category = CATEGORY_MAP[data.category];
   if (data.stock !== undefined) updateData.stock = parseInt(data.stock) || 0;
