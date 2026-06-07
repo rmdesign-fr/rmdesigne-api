@@ -57,7 +57,7 @@ const errorHandler = (err, req, res, _next) => {
   // Multer errors
   if (err.code === "LIMIT_FILE_SIZE") {
     return res.status(400).json({
-      message: "Fichier trop volumineux (max 5MB)",
+      message: "Fichier trop volumineux (max 15MB)",
     });
   }
   if (err.code === "LIMIT_FILE_COUNT" || err.code === "LIMIT_UNEXPECTED_FILE") {
