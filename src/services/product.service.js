@@ -13,6 +13,7 @@ function serializeProduct(product) {
     stock: product.stock,
     isActive: product.isActive,
     surCommande: product.surCommande || false,
+    displayOnly: product.displayOnly || false,
     images: product.images,
     createdAt: product.createdAt.toISOString(),
   };
@@ -61,6 +62,7 @@ async function createProduct(data, files) {
       stock: data.stock,
       isActive: data.isActive,
       surCommande: data.surCommande === "true" || data.surCommande === true,
+      displayOnly: data.displayOnly === "true" || data.displayOnly === true,
       images: imageUrls,
     },
   });
@@ -99,6 +101,9 @@ async function updateProduct(id, data, newFiles, existingImageUrls) {
   if (data.surCommande !== undefined)
     updateData.surCommande =
       data.surCommande === "true" || data.surCommande === true;
+  if (data.displayOnly !== undefined)
+    updateData.displayOnly =
+      data.displayOnly === "true" || data.displayOnly === true;
   updateData.images = allImages;
 
   const product = await prisma.product.update({

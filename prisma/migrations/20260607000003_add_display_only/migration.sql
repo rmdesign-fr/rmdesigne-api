@@ -1,0 +1,1 @@
+ALTER TABLE "Product" ADD COLUMN "displayOnly" BOOLEAN NOT NULL DEFAULT false;
