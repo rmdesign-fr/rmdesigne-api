@@ -1,5 +1,4 @@
 const express = require("express");
-const cors = require("cors");
 const helmet = require("helmet");
 const cookieParser = require("cookie-parser");
 const env = require("./config/env");
@@ -23,33 +22,46 @@ const app = express();
 // Trust the first proxy hop so req.ip and express-rate-limit work correctly.
 app.set("trust proxy", 1);
 
-// ─── Security & parsing ──────────────────────────────────
-app.use(helmet());
-// Support a single origin or a comma-separated list (e.g. for custom domain + Railway URL)
-const allowedOrigins = env.FRONTEND_URL.split(",")
-  .map((o) => o.trim().replace(/\/+$/, "")) // trim and strip trailing slashes
+// ─── CORS ─────────────────────────────────────────────
+// Custom middleware — sets headers directly on res, so they are
+// guaranteed to be present on every response including error ones.
+const allowedOrigins = (env.FRONTEND_URL || "")
+  .split(",")
+  .map((o) => o.trim().replace(/\/+$/, ""))
   .filter(Boolean);
 
-logger.info({ allowedOrigins }, "CORS allowed origins");
+logger.info({ allowedOrigins }, "CORS: allowed origins");
 
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      // Allow server-to-server / same-origin requests (no Origin header)
-      if (!origin) return callback(null, true);
-      const normalised = origin.trim().replace(/\/+$/, "");
-      if (allowedOrigins.includes(normalised)) {
-        callback(null, true);
-      } else {
-        // Don't throw — just return false so the browser blocks it,
-        // but Express doesn't turn it into a 500.
-        logger.warn({ origin, allowedOrigins }, "CORS blocked request");
-        callback(null, false);
-      }
-    },
-    credentials: true,
-  }),
-);
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (origin) {
+    const norm = origin.trim().replace(/\/+$/, "");
+    if (allowedOrigins.includes(norm)) {
+      res.setHeader("Access-Control-Allow-Origin", origin);
+      res.setHeader("Access-Control-Allow-Credentials", "true");
+      res.setHeader("Vary", "Origin");
+      res.setHeader(
+        "Access-Control-Allow-Methods",
+        "GET, POST, PUT, PATCH, DELETE, OPTIONS",
+      );
+      res.setHeader(
+        "Access-Control-Allow-Headers",
+        "Content-Type, Authorization, Cookie",
+      );
+      res.setHeader("Access-Control-Max-Age", "86400");
+    } else {
+      logger.warn({ origin, allowedOrigins }, "CORS: blocked");
+    }
+  }
+  // Handle OPTIONS preflight immediately
+  if (req.method === "OPTIONS") return res.status(204).end();
+  next();
+});
+
+// ─── Security & parsing ──────────────────────────────
+// crossOriginResourcePolicy: false lets cross-origin pages read
+// the API responses (CORP is separate from CORS).
+app.use(helmet({ crossOriginResourcePolicy: false }));
 app.use(express.json({ limit: "10kb" }));
 app.use(cookieParser());
 app.use(globalLimiter);
