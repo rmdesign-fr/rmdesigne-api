@@ -16,6 +16,7 @@ exports.addGalleryImage = async ({ serviceSlug, imageFile, title, order }) => {
   const imageUrl = await cloudinaryService.uploadImage(
     imageFile.buffer,
     `services/${serviceSlug}`,
+    imageFile.mimetype,
   );
 
   const galleryItem = await prisma.serviceGallery.create({

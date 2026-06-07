@@ -1,21 +1,12 @@
 const multer = require("multer");
-const AppError = require("../utils/AppError");
 
 const storage = multer.memoryStorage();
 
-const fileFilter = (_req, file, cb) => {
-  // Accept any image type — Cloudinary handles conversion.
-  // Reject non-image files (documents, videos, executables, etc.)
-  if (file.mimetype.startsWith("image/")) {
-    cb(null, true);
-  } else {
-    cb(new AppError("Seuls les fichiers image sont acceptés", 400), false);
-  }
-};
-
 const upload = multer({
   storage,
-  fileFilter,
+  // No MIME-type filter — Cloudinary validates content server-side.
+  // Some browsers (Chrome on Windows) send HEIC/HEIF files as
+  // application/octet-stream, so a strict filter would block them.
   limits: {
     fileSize: 15 * 1024 * 1024, // 15 MB — covers high-res pro photos
     files: 5,
