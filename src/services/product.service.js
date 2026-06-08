@@ -57,12 +57,12 @@ async function createProduct(data, files) {
     data: {
       name: data.name,
       description: data.description || null,
-      price: parseFloat(data.price) || 0,
+      price: Number(data.price) || 0,
       category: CATEGORY_MAP[data.category],
-      stock: parseInt(data.stock) || 0,
-      isActive: data.isActive === "true" || data.isActive === true,
-      surCommande: data.surCommande === "true" || data.surCommande === true,
-      displayOnly: data.displayOnly === "true" || data.displayOnly === true,
+      stock: Number(data.stock) || 0,
+      isActive: data.isActive === true || data.isActive === "true",
+      surCommande: data.surCommande === true || data.surCommande === "true",
+      displayOnly: data.displayOnly === true || data.displayOnly === "true",
       images: imageUrls,
     },
   });
@@ -93,18 +93,18 @@ async function updateProduct(id, data, newFiles, existingImageUrls) {
   if (data.name !== undefined) updateData.name = data.name;
   if (data.description !== undefined)
     updateData.description = data.description || null;
-  if (data.price !== undefined) updateData.price = parseFloat(data.price) || 0;
+  if (data.price !== undefined) updateData.price = Number(data.price) || 0;
   if (data.category !== undefined)
     updateData.category = CATEGORY_MAP[data.category];
-  if (data.stock !== undefined) updateData.stock = parseInt(data.stock) || 0;
+  if (data.stock !== undefined) updateData.stock = Number(data.stock) || 0;
   if (data.isActive !== undefined)
-    updateData.isActive = data.isActive === "true" || data.isActive === true;
+    updateData.isActive = data.isActive === true || data.isActive === "true";
   if (data.surCommande !== undefined)
     updateData.surCommande =
-      data.surCommande === "true" || data.surCommande === true;
+      data.surCommande === true || data.surCommande === "true";
   if (data.displayOnly !== undefined)
     updateData.displayOnly =
-      data.displayOnly === "true" || data.displayOnly === true;
+      data.displayOnly === true || data.displayOnly === "true";
   updateData.images = allImages;
 
   const product = await prisma.product.update({
